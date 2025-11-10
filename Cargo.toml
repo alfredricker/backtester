@@ -1,0 +1,8 @@
+[package]
+name = "strategy_tester"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+polars = { version = "0.51.0", features = ["parquet", "lazy"] }
+chrono = "0.4"
