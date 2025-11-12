@@ -33,6 +33,16 @@ impl PriceField {
     }
 }
 
+// HIGH OF DAY
+pub struct High{
+    high: f64,
+    timeline: TimeWindow,
+}
+
+impl HOD{
+
+}
+
 /// Simple Moving Average for price
 pub fn price_sma(data: &[Row], window: TimeWindow, field: PriceField) -> Option<f64> {
     sma(data, window, |row| field.extract(row))

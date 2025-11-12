@@ -1,5 +1,6 @@
 mod parsing;
 mod position;
+mod config;
 use chrono::NaiveDate;
 fn main() {
     let test_date = NaiveDate::from_ymd_opt(2021,3,1).unwrap();
