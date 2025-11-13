@@ -4,3 +4,4 @@ pub mod price;
 pub mod general;
 pub mod tracker;
 pub mod calculators;
+pub mod enums;
