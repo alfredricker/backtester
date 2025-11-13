@@ -1,6 +1,11 @@
 mod parsing;
 mod position;
 mod config;
+mod indicators;
+mod types;
+mod events;
+mod tracking;
+
 use chrono::NaiveDate;
 fn main() {
     let test_date = NaiveDate::from_ymd_opt(2021,3,1).unwrap();
