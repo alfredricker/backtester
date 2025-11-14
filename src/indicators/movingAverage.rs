@@ -25,7 +25,7 @@ impl MovingAverage {
     }
     
     pub fn get(&self) -> Option<f64> {
-        self.tracker.get()
+        self.tracker.get() // sumtracker get method returns the average
     }
     
     pub fn reset(&mut self) {
