@@ -1,9 +1,106 @@
-use chrono::{Duration, NaiveTime};
+use chrono::NaiveTime;
+use crate::indicators::indicator::Indicator;
+use crate::indicators::{
+    movingAverage::MovingAverage,
+    rsi::RSI,
+    highLow::{HighOfPeriod, LowOfPeriod},
+    vwap::VWAP,
+    time::TimeWindow,
+    fields::{CommonField, PriceField},
+};
 
 /// Global configuration for strategy testing
 #[derive(Debug, Clone)]
 pub struct Config {
     pub market_hours: MarketHours,
+    pub indicator_config: IndicatorConfig,
+}
+
+/// Specification for creating indicators
+#[derive(Debug, Clone)]
+pub enum IndicatorSpec {
+    MovingAverage { window: TimeWindow, field: CommonField },
+    RSI { window: TimeWindow, field: CommonField },
+    HighOfPeriod { window: TimeWindow, field: CommonField },
+    LowOfPeriod { window: TimeWindow, field: CommonField },
+    VWAP { window: TimeWindow, price_field: Option<PriceField> },
+}
+
+impl IndicatorSpec {
+    /// Create an indicator instance from this specification
+    pub fn build(&self) -> Indicator {
+        match self {
+            IndicatorSpec::MovingAverage { window, field } => {
+                Indicator::MovingAverage(MovingAverage::new(*window, *field))
+            }
+            IndicatorSpec::RSI { window, field } => {
+                Indicator::RSI(RSI::new(*window, *field))
+            }
+            IndicatorSpec::HighOfPeriod { window, field } => {
+                Indicator::HighOfPeriod(HighOfPeriod::new(*window, *field))
+            }
+            IndicatorSpec::LowOfPeriod { window, field } => {
+                Indicator::LowOfPeriod(LowOfPeriod::new(*window, *field))
+            }
+            IndicatorSpec::VWAP { window, price_field } => {
+                Indicator::VWAP(VWAP::new(*window, *price_field))
+            }
+        }
+    }
+}
+
+/// Configuration for which indicators to track for each ticker
+#[derive(Debug, Clone)]
+pub struct IndicatorConfig {
+    /// Enable/disable indicator tracking globally
+    pub enabled: bool,
+    /// List of indicator specifications
+    pub specs: Vec<IndicatorSpec>,
+}
+
+impl IndicatorConfig {
+    /// Create a default indicator configuration with common indicators
+    pub fn default_indicators() -> Self {
+        Self {
+            enabled: true,
+            specs: vec![
+                IndicatorSpec::MovingAverage {
+                    window: TimeWindow::Bars(20),
+                    field: CommonField::Close,
+                },
+                IndicatorSpec::RSI {
+                    window: TimeWindow::Bars(14),
+                    field: CommonField::Close,
+                },
+                IndicatorSpec::HighOfPeriod {
+                    window: TimeWindow::Days(1),
+                    field: CommonField::High,
+                },
+                IndicatorSpec::LowOfPeriod {
+                    window: TimeWindow::Days(1),
+                    field: CommonField::Low,
+                },
+                IndicatorSpec::VWAP {
+                    window: TimeWindow::Days(1),
+                    price_field: Some(PriceField::Typical),
+                },
+            ],
+        }
+    }
+    
+    /// Create indicators for a new ticker
+    pub fn create_indicators(&self) -> Vec<Indicator> {
+        if !self.enabled {
+            return vec![];
+        }
+        self.specs.iter().map(|spec| spec.build()).collect()
+    }
+}
+
+impl Default for IndicatorConfig {
+    fn default() -> Self {
+        Self::default_indicators()
+    }
 }
 
 /// Configuration for market hours and trading sessions
@@ -27,6 +124,7 @@ impl Default for Config {
     fn default() -> Self {
         Config {
             market_hours: MarketHours::default(),
+            indicator_config: IndicatorConfig::default(),
         }
     }
 }

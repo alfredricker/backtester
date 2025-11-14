@@ -1,9 +1,10 @@
 // VOLUME BASED INDICATORS
-use super::tracker::{SumTracker, WindowTracker};
-use super::enums::{PriceField, CommonField};
+use super::trackers::{SumTracker, WindowTracker};
+use super::fields::{PriceField, CommonField};
 use super::time::TimeWindow;
 use crate::types::ohlcv::Row;
 
+#[derive(Debug)]
 pub struct VWAP {
     pv_tracker: SumTracker,     // PRICE × VOLUME TRACKER
     volume_tracker: SumTracker,  // VOLUME TRACKER

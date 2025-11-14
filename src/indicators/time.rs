@@ -4,6 +4,7 @@
 // that matches the data
 // example: sma(TimeWindow::Minutes(5)) simple moving average of last 5 minutes
 
+#[allow(unused_imports)] // Datelike is used in tests
 use chrono::{DateTime, Duration, Utc, Datelike, Timelike};
 use crate::config::{get_config, MarketHours};
 
@@ -179,26 +180,15 @@ impl TimeWindow {
     }
 }
 
-/// Central function to get start time for any window
-/// This is a convenience function that uses the global config
+/// Get start time with custom market hours configuration
 pub fn get_start_time(
     window: TimeWindow,
     current_time: DateTime<Utc>,
     round: bool,
+    market_hours: Option<&MarketHours>,
 ) -> DateTime<Utc> {
-    window.get_start_time(current_time, round, None)
+    window.get_start_time(current_time, round, market_hours)
 }
-
-/// Get start time with custom market hours configuration
-pub fn get_start_time_with_config(
-    window: TimeWindow,
-    current_time: DateTime<Utc>,
-    round: bool,
-    market_hours: &MarketHours,
-) -> DateTime<Utc> {
-    window.get_start_time(current_time, round, Some(market_hours))
-}
-
 /// Represents specific times of day for auction-based exits/entries
 #[derive(Debug, Clone, Copy)]
 pub struct TimeOfDay {
@@ -241,6 +231,7 @@ mod tests {
                 premarket_open: NaiveTime::from_hms_opt(4, 0, 0).unwrap(),
                 postmarket_close: NaiveTime::from_hms_opt(20, 0, 0).unwrap(),
             },
+            indicator_config: crate::config::IndicatorConfig::default(),
         };
         init_config(config);
     }
@@ -325,6 +316,7 @@ mod tests {
                 premarket_open: NaiveTime::from_hms_opt(4, 0, 0).unwrap(),
                 postmarket_close: NaiveTime::from_hms_opt(20, 0, 0).unwrap(),
             },
+            indicator_config: crate::config::IndicatorConfig::default(),
         };
         
         // Current time: 2025-08-08 14:26:00
@@ -375,7 +367,7 @@ mod tests {
             .with_timezone(&Utc);
         
         // Test using the central function
-        let start = get_start_time(TimeWindow::Hours(2), current, true);
+        let start = get_start_time(TimeWindow::Hours(2), current, true, None);
         assert_eq!(start.hour(), 14);
         assert_eq!(start.minute(), 0);
     }

@@ -1,5 +1,6 @@
 use crate::types::ohlcv::{Row};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CommonField{
     Open,
     High,
@@ -28,6 +29,7 @@ impl CommonField {
 }
 
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PriceField{
     Open,
     High,

@@ -4,7 +4,7 @@ mod config;
 mod indicators;
 mod types;
 mod events;
-mod tracking;
+mod equity;
 
 use chrono::NaiveDate;
 fn main() {
