@@ -1,7 +1,7 @@
 // VOLUME BASED INDICATORS
-use super::trackers::{SumTracker, WindowTracker};
-use super::fields::{PriceField, CommonField};
-use super::time::TimeWindow;
+use crate::indicators::trackers::{SumTracker, WindowTracker};
+use crate::indicators::fields::{PriceField, CommonField};
+use crate::indicators::window::Window;
 use crate::types::ohlcv::Row;
 
 #[derive(Debug)]
@@ -12,7 +12,7 @@ pub struct VWAP {
 }
 
 impl VWAP {
-    pub fn new(window: TimeWindow, price_field: Option<PriceField>) -> Self {
+    pub fn new(window: Window, price_field: Option<PriceField>) -> Self {
         let pf = price_field.unwrap_or(PriceField::Typical);
         Self {
             pv_tracker: SumTracker::new(window),

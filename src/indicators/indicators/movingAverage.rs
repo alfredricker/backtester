@@ -1,6 +1,6 @@
-use super::trackers::{SumTracker, WindowTracker};
-use super::fields::{CommonField};
-use super::time::TimeWindow;
+use crate::indicators::trackers::{SumTracker, WindowTracker};
+use crate::indicators::fields::CommonField;
+use crate::indicators::window::Window;
 use crate::types::ohlcv::Row;
 
 /// Moving Average using stateful tracking
@@ -11,7 +11,7 @@ pub struct MovingAverage {
 }
 
 impl MovingAverage {
-    pub fn new(window: TimeWindow, field: CommonField) -> Self {
+    pub fn new(window: Window, field: CommonField) -> Self {
         Self {
             tracker: SumTracker::new(window),
             field,

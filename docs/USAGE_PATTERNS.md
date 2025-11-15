@@ -14,7 +14,7 @@ for date in backtest_dates {
     let data = dm.get_ticker_date("AAPL", date)?;
     
     // Indicators can look back at previously cached dates
-    let sma = price_sma(&data, TimeWindow::Bars(50), PriceField::Close);
+    let sma = price_sma(&data, Window::Bars(50), PriceField::Close);
 }
 // Expected cache hit rate: 80-95%
 ```
@@ -73,7 +73,7 @@ for date in backtest_dates {
     
     // Now calculate indicators on the full buffer
     let buffer_vec: Vec<Row> = historical_buffer.iter().cloned().collect();
-    let sma = price_sma(&buffer_vec, TimeWindow::Bars(50), PriceField::Close);
+    let sma = price_sma(&buffer_vec, Window::Bars(50), PriceField::Close);
     
     // Generate signals based on today's data only
     for row in &today_data {
@@ -142,19 +142,19 @@ if stats.hit_rate() < 0.5 {
 ```rust
 // BAD: Recalculating on every bar
 for row in &data {
-    let sma = price_sma(&data, TimeWindow::Bars(20), PriceField::Close);
+    let sma = price_sma(&data, Window::Bars(20), PriceField::Close);
     // This recalculates the entire SMA each time!
 }
 
 // GOOD: Calculate once, or incrementally
-let sma = price_sma(&data, TimeWindow::Bars(20), PriceField::Close);
+let sma = price_sma(&data, Window::Bars(20), PriceField::Close);
 
 // Or for streaming:
 let mut ema_value = None;
 for i in 0..data.len() {
     ema_value = price_ema(
         &data[..=i], 
-        TimeWindow::Bars(20), 
+        Window::Bars(20), 
         PriceField::Close, 
         ema_value  // Pass previous value
     );

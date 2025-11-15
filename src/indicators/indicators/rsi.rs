@@ -1,7 +1,6 @@
-
-use super::trackers::{ChangeTracker, WindowTracker};
-use super::fields::CommonField;
-use super::time::TimeWindow;
+use crate::indicators::trackers::{ChangeTracker, WindowTracker};
+use crate::indicators::fields::CommonField;
+use crate::indicators::window::Window;
 use crate::types::ohlcv::Row;
 
 /// Relative Strength Index (RSI)
@@ -16,7 +15,7 @@ pub struct RSI {
 }
 
 impl RSI {
-    pub fn new(window: TimeWindow, field: CommonField) -> Self {
+    pub fn new(window: Window, field: CommonField) -> Self {
         Self {
             tracker: ChangeTracker::absolute(window),
             field,
@@ -24,7 +23,7 @@ impl RSI {
     }
     
     /// Convenience constructor for close price RSI (most common)
-    pub fn close(window: TimeWindow) -> Self {
+    pub fn close(window: Window) -> Self {
         Self::new(window, CommonField::Close)
     }
     

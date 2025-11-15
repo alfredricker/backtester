@@ -1,8 +1,5 @@
-pub mod time;
-pub mod vwap;
+pub mod window;
 pub mod trackers;
-pub mod movingAverage;
 pub mod fields;
-pub mod rsi;
-pub mod highLow;
 pub mod indicator;
+pub mod indicators;

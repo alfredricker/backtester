@@ -1,8 +1,7 @@
-//
-use super::time::TimeWindow;
-use super::trackers::{WindowTracker, ExtremumTracker, SumTracker, ChangeTracker};
-use super::fields::CommonField;
-use crate::types::ohlcv::{Row};
+use crate::indicators::window::Window;
+use crate::indicators::trackers::{WindowTracker, ExtremumTracker};
+use crate::indicators::fields::CommonField;
+use crate::types::ohlcv::Row;
 
 /// INDICATORS ARE SIMPLE STRUCTS THAT TRACK THE MINIMUM AMOUNT OF DATA
 
@@ -13,7 +12,7 @@ pub struct HighOfPeriod {
 }
 
 impl HighOfPeriod {
-    pub fn new(window: TimeWindow, field: CommonField) -> Self {
+    pub fn new(window: Window, field: CommonField) -> Self {
         Self {
             tracker: ExtremumTracker::new_max(window),
             field,
@@ -46,7 +45,7 @@ pub struct LowOfPeriod {
 }
 
 impl LowOfPeriod {
-    pub fn new(window: TimeWindow, field: CommonField) -> Self {
+    pub fn new(window: Window, field: CommonField) -> Self {
         Self {
             tracker: ExtremumTracker::new_min(window),
             field,

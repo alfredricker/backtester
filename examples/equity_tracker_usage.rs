@@ -13,7 +13,7 @@ use strategy_tester::equity::master::EquityTracker;
 use strategy_tester::config::{Config, IndicatorSpec, IndicatorConfig};
 use strategy_tester::types::ohlcv::Row;
 use strategy_tester::indicators::{
-    time::TimeWindow,
+    time::Window,
     fields::CommonField,
 };
 
@@ -26,15 +26,15 @@ fn main() {
         enabled: true,
         specs: vec![
             IndicatorSpec::MovingAverage {
-                window: TimeWindow::Bars(3),
+                window: Window::Bars(3),
                 field: CommonField::Close,
             },
             IndicatorSpec::RSI {
-                window: TimeWindow::Bars(2),
+                window: Window::Bars(2),
                 field: CommonField::Close,
             },
             IndicatorSpec::HighOfPeriod {
-                window: TimeWindow::Bars(5),
+                window: Window::Bars(5),
                 field: CommonField::High,
             },
         ],

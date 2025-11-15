@@ -1,13 +1,8 @@
 use chrono::NaiveTime;
 use crate::indicators::indicator::Indicator;
-use crate::indicators::{
-    movingAverage::MovingAverage,
-    rsi::RSI,
-    highLow::{HighOfPeriod, LowOfPeriod},
-    vwap::VWAP,
-    time::TimeWindow,
-    fields::{CommonField, PriceField},
-};
+use crate::indicators::indicators::{MovingAverage, RSI, HighOfPeriod, LowOfPeriod, VWAP};
+use crate::indicators::window::Window;
+use crate::indicators::fields::{CommonField, PriceField};
 
 /// Global configuration for strategy testing
 #[derive(Debug, Clone)]
@@ -19,11 +14,11 @@ pub struct Config {
 /// Specification for creating indicators
 #[derive(Debug, Clone)]
 pub enum IndicatorSpec {
-    MovingAverage { window: TimeWindow, field: CommonField },
-    RSI { window: TimeWindow, field: CommonField },
-    HighOfPeriod { window: TimeWindow, field: CommonField },
-    LowOfPeriod { window: TimeWindow, field: CommonField },
-    VWAP { window: TimeWindow, price_field: Option<PriceField> },
+    MovingAverage { window: Window, field: CommonField },
+    RSI { window: Window, field: CommonField },
+    HighOfPeriod { window: Window, field: CommonField },
+    LowOfPeriod { window: Window, field: CommonField },
+    VWAP { window: Window, price_field: Option<PriceField> },
 }
 
 impl IndicatorSpec {
@@ -65,23 +60,23 @@ impl IndicatorConfig {
             enabled: true,
             specs: vec![
                 IndicatorSpec::MovingAverage {
-                    window: TimeWindow::Bars(20),
+                    window: Window::Bars(20),
                     field: CommonField::Close,
                 },
                 IndicatorSpec::RSI {
-                    window: TimeWindow::Bars(14),
+                    window: Window::Bars(14),
                     field: CommonField::Close,
                 },
                 IndicatorSpec::HighOfPeriod {
-                    window: TimeWindow::Days(1),
+                    window: Window::Days(1),
                     field: CommonField::High,
                 },
                 IndicatorSpec::LowOfPeriod {
-                    window: TimeWindow::Days(1),
+                    window: Window::Days(1),
                     field: CommonField::Low,
                 },
                 IndicatorSpec::VWAP {
-                    window: TimeWindow::Days(1),
+                    window: Window::Days(1),
                     price_field: Some(PriceField::Typical),
                 },
             ],

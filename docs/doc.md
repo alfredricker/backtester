@@ -13,8 +13,8 @@ price crosses below a threshold (stop loss sell),
 indicator crosses below a threshold, etc.
 
 TRACKING THE LEAST AMOUNT OF DATA
-seems like every indicator should be passed at least 1 TimeWindow
-HOD(TimeWindow::Days(1))
+seems like every indicator should be passed at least 1 Window
+HOD(Window::Days(1))
 Track high of day seems simple -- you store the high of the day in the HOD struct, and every new datapoint
 you do a simple greater than check. But for sliding windows, this is a little more difficult.
 
@@ -61,12 +61,12 @@ Tracks sum and sum of squared differences for variance calculation
 
 ```rust
 use backtester::indicators::price::{HighOfPeriod, LowOfPeriod, MovingAverage};
-use backtester::indicators::time::TimeWindow;
+use backtester::indicators::time::Window;
 
 // Create indicators
-let mut hod = HighOfPeriod::new(TimeWindow::Days(1), PriceField::High);
-let mut lod = LowOfPeriod::new(TimeWindow::Days(1), PriceField::Low);
-let mut ma = MovingAverage::new(TimeWindow::Bars(20), PriceField::Close);
+let mut hod = HighOfPeriod::new(Window::Days(1), PriceField::High);
+let mut lod = LowOfPeriod::new(Window::Days(1), PriceField::Low);
+let mut ma = MovingAverage::new(Window::Bars(20), PriceField::Close);
 
 // Update with each tick
 for row in data {

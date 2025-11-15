@@ -188,7 +188,7 @@ impl EquityTracker {
 mod tests {
     use super::*;
     use crate::config::IndicatorSpec;
-    use crate::indicators::{time::TimeWindow, fields::CommonField};
+    use crate::indicators::{window::Window, fields::CommonField};
 
     fn create_test_row(ticker: &str, timestamp: i64, close: f64) -> Row {
         Row {
@@ -208,7 +208,7 @@ mod tests {
             enabled: true,
             specs: vec![
                 IndicatorSpec::MovingAverage {
-                    window: TimeWindow::Bars(3),
+                    window: Window::Bars(3),
                     field: CommonField::Close,
                 },
             ],
@@ -223,7 +223,7 @@ mod tests {
             enabled: true,
             specs: vec![
                 IndicatorSpec::MovingAverage {
-                    window: TimeWindow::Bars(3),
+                    window: Window::Bars(3),
                     field: CommonField::Close,
                 },
             ],
@@ -244,7 +244,7 @@ mod tests {
             enabled: true,
             specs: vec![
                 IndicatorSpec::RSI {
-                    window: TimeWindow::Bars(2),
+                    window: Window::Bars(2),
                     field: CommonField::Close,
                 },
             ],
@@ -311,7 +311,7 @@ mod tests {
             enabled: true,
             specs: vec![
                 IndicatorSpec::MovingAverage {
-                    window: TimeWindow::Bars(2),
+                    window: Window::Bars(2),
                     field: CommonField::Close,
                 },
             ],
@@ -336,7 +336,7 @@ mod tests {
             enabled: true,
             specs: vec![
                 IndicatorSpec::MovingAverage {
-                    window: TimeWindow::Bars(2),
+                    window: Window::Bars(2),
                     field: CommonField::Close,
                 },
             ],
@@ -378,7 +378,7 @@ mod tests {
             enabled: false,
             specs: vec![
                 IndicatorSpec::MovingAverage {
-                    window: TimeWindow::Bars(2),
+                    window: Window::Bars(2),
                     field: CommonField::Close,
                 },
             ],

@@ -119,7 +119,7 @@ impl Event for Cross {
 mod tests {
     use super::*;
     use crate::indicators::movingAverage::MovingAverage;
-    use crate::indicators::time::TimeWindow;
+    use crate::indicators::time::Window;
     use crate::indicators::fields::CommonField;
     use crate::types::ohlcv::Row;
 
@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn test_cross_above_fixed_value() {
         let mut indicators = vec![Indicator::MovingAverage(
-            MovingAverage::new(TimeWindow::Bars(2), CommonField::Close)
+            MovingAverage::new(Window::Bars(2), CommonField::Close)
         )];
         let mut event = Cross::above(0, Threshold::Fixed(100.0));
 
@@ -169,8 +169,8 @@ mod tests {
     fn test_cross_above_indicator() {
         // Fast MA (2-bar) and Slow MA (3-bar)
         let mut indicators = vec![
-            Indicator::MovingAverage(MovingAverage::new(TimeWindow::Bars(2), CommonField::Close)),
-            Indicator::MovingAverage(MovingAverage::new(TimeWindow::Bars(3), CommonField::Close)),
+            Indicator::MovingAverage(MovingAverage::new(Window::Bars(2), CommonField::Close)),
+            Indicator::MovingAverage(MovingAverage::new(Window::Bars(3), CommonField::Close)),
         ];
         let mut event = Cross::above(0, Threshold::Indicator(1));
 
@@ -205,7 +205,7 @@ mod tests {
     #[test]
     fn test_cross_below_fixed_value() {
         let mut indicators = vec![Indicator::MovingAverage(
-            MovingAverage::new(TimeWindow::Bars(2), CommonField::Close)
+            MovingAverage::new(Window::Bars(2), CommonField::Close)
         )];
         let mut event = Cross::below(0, Threshold::Fixed(100.0));
 
@@ -236,7 +236,7 @@ mod tests {
     fn test_cross_above_field() {
         // Test indicator crossing above a row field (e.g., Close price)
         let mut indicators = vec![Indicator::MovingAverage(
-            MovingAverage::new(TimeWindow::Bars(2), CommonField::High)
+            MovingAverage::new(Window::Bars(2), CommonField::High)
         )];
         let mut event = Cross::above(0, Threshold::Field(CommonField::Close));
 
@@ -267,7 +267,7 @@ mod tests {
     #[test]
     fn test_reset() {
         let mut indicators = vec![Indicator::MovingAverage(
-            MovingAverage::new(TimeWindow::Bars(2), CommonField::Close)
+            MovingAverage::new(Window::Bars(2), CommonField::Close)
         )];
         let mut event = Cross::above(0, Threshold::Fixed(100.0));
 

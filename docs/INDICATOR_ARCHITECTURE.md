@@ -6,7 +6,7 @@ All indicators follow the **update() + get() pattern** for efficient streaming/b
 
 ```rust
 // Create indicator
-let mut indicator = SomeIndicator::new(TimeWindow::Bars(20), field);
+let mut indicator = SomeIndicator::new(Window::Bars(20), field);
 
 // In your backtest loop
 for row in data {
@@ -29,8 +29,8 @@ We have specialized trackers optimized for different calculation patterns:
 **Space:** Often much less than window size
 
 ```rust
-let mut hod = HighOfPeriod::new(TimeWindow::Days(1), CommonField::High);
-let mut lod = LowOfPeriod::new(TimeWindow::Days(1), CommonField::Low);
+let mut hod = HighOfPeriod::new(Window::Days(1), CommonField::High);
+let mut lod = LowOfPeriod::new(Window::Days(1), CommonField::Low);
 ```
 
 ### 2. SumTracker (Averages)
@@ -40,7 +40,7 @@ let mut lod = LowOfPeriod::new(TimeWindow::Days(1), CommonField::Low);
 **Space:** O(W) where W is window size
 
 ```rust
-let mut ma = MovingAverage::new(TimeWindow::Bars(20), CommonField::Close);
+let mut ma = MovingAverage::new(Window::Bars(20), CommonField::Close);
 ```
 
 ### 3. VarianceTracker (Standard Deviation)
@@ -61,9 +61,9 @@ let mut ma = MovingAverage::new(TimeWindow::Bars(20), CommonField::Close);
 **Space:** O(W)
 
 ```rust
-let mut vwap = VWAP::typical(TimeWindow::Days(1));
+let mut vwap = VWAP::typical(Window::Days(1));
 // or
-let mut vwap = VWAP::new(TimeWindow::Hours(4), CommonField::Close);
+let mut vwap = VWAP::new(Window::Hours(4), CommonField::Close);
 ```
 
 ### 5. RSITracker (Relative Strength Index)
@@ -73,9 +73,9 @@ let mut vwap = VWAP::new(TimeWindow::Hours(4), CommonField::Close);
 **Space:** O(W)
 
 ```rust
-let mut rsi = RSI::close(TimeWindow::Bars(14));
+let mut rsi = RSI::close(Window::Bars(14));
 // or
-let mut rsi = RSI::new(TimeWindow::Bars(14), CommonField::Typical);
+let mut rsi = RSI::new(Window::Bars(14), CommonField::Typical);
 ```
 
 ### 6. HistoryTracker (Full Value Storage)
@@ -87,7 +87,7 @@ let mut rsi = RSI::new(TimeWindow::Bars(14), CommonField::Typical);
 ```rust
 use super::tracker::HistoryTracker;
 
-let mut tracker = HistoryTracker::new(TimeWindow::Bars(50));
+let mut tracker = HistoryTracker::new(Window::Bars(50));
 tracker.push(timestamp, value);
 tracker.prune(timestamp);
 
@@ -104,7 +104,7 @@ src/indicators/
 ├── tracker.rs       - Core tracking algorithms (don't use directly)
 ├── general.rs       - Stateful indicators (use these!)
 ├── calculators.rs   - Batch calculation functions
-├── time.rs          - TimeWindow enum and helpers
+├── time.rs          - Window enum and helpers
 ├── price.rs         - Price-specific indicators (empty for now)
 └── volume.rs        - Volume-specific indicators (empty for now)
 ```
@@ -146,29 +146,29 @@ pub enum CommonField {
 }
 ```
 
-## TimeWindow Options
+## Window Options
 
 ```rust
-TimeWindow::Bars(n)      // Last N bars/candles
-TimeWindow::Minutes(m)   // Last M minutes
-TimeWindow::Hours(h)     // Last H hours
-TimeWindow::Days(d)      // Last D days
+Window::Bars(n)      // Last N bars/candles
+Window::Minutes(m)   // Last M minutes
+Window::Hours(h)     // Last H hours
+Window::Days(d)      // Last D days
 ```
 
 ## Example: Complete Strategy
 
 ```rust
 use crate::indicators::general::{HighOfPeriod, LowOfPeriod, MovingAverage, RSI, VWAP};
-use crate::indicators::time::TimeWindow;
+use crate::indicators::time::Window;
 use crate::indicators::general::CommonField;
 
 // Initialize indicators
-let mut hod = HighOfPeriod::new(TimeWindow::Days(1), CommonField::High);
-let mut lod = LowOfPeriod::new(TimeWindow::Days(1), CommonField::Low);
-let mut ma20 = MovingAverage::new(TimeWindow::Bars(20), CommonField::Close);
-let mut ma50 = MovingAverage::new(TimeWindow::Bars(50), CommonField::Close);
-let mut rsi = RSI::close(TimeWindow::Bars(14));
-let mut vwap = VWAP::typical(TimeWindow::Days(1));
+let mut hod = HighOfPeriod::new(Window::Days(1), CommonField::High);
+let mut lod = LowOfPeriod::new(Window::Days(1), CommonField::Low);
+let mut ma20 = MovingAverage::new(Window::Bars(20), CommonField::Close);
+let mut ma50 = MovingAverage::new(Window::Bars(50), CommonField::Close);
+let mut rsi = RSI::close(Window::Bars(14));
+let mut vwap = VWAP::typical(Window::Days(1));
 
 // Backtest loop
 for row in data {
@@ -210,7 +210,7 @@ To add a new indicator:
    }
    
    impl MyIndicator {
-       pub fn new(window: TimeWindow, field: CommonField) -> Self { ... }
+       pub fn new(window: Window, field: CommonField) -> Self { ... }
        pub fn update(&mut self, row: &Row) { ... }
        pub fn get(&self) -> Option<f64> { ... }
        pub fn reset(&mut self) { ... }

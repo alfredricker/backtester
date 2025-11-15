@@ -1,8 +1,5 @@
 use crate::types::ohlcv::Row;
-use super::movingAverage::MovingAverage;
-use super::rsi::RSI;
-use super::highLow::{HighOfPeriod, LowOfPeriod};
-use super::vwap::VWAP;
+use super::indicators::{MovingAverage, RSI, HighOfPeriod, LowOfPeriod, VWAP};
 
 /// Macro to define indicators and generate all boilerplate code
 /// 
