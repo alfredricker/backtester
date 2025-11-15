@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use super::super::window::{Window, WindowConfig};
+use super::super::window::Window;
 use super::WindowTracker;
 
 // ============================================================================
@@ -25,13 +25,10 @@ pub struct HistoryTracker {
 
 impl HistoryTracker {
     /// Create a new HistoryTracker
-    /// 
-    /// Accepts either `Window` or `WindowConfig` (from `.rounded()`)
-    pub fn new(window: impl Into<WindowConfig>) -> Self {
-        let config: WindowConfig = window.into();
+    pub fn new(window: Window) -> Self {
         Self {
             values: VecDeque::new(),
-            window: config.window,
+            window,
         }
     }
     

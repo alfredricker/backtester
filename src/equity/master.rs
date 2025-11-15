@@ -159,25 +159,6 @@ impl EquityTracker {
         self.tickers.keys().cloned().collect()
     }
     
-    /// Reset all indicators for a specific ticker
-    pub fn reset_ticker(&mut self, ticker: &str) {
-        if let Some(data) = self.tickers.get_mut(ticker) {
-            data.reset();
-        }
-    }
-    
-    /// Reset all indicators for all tickers
-    pub fn reset_all(&mut self) {
-        for data in self.tickers.values_mut() {
-            data.reset();
-        }
-    }
-    
-    /// Clear all ticker data
-    pub fn clear(&mut self) {
-        self.tickers.clear();
-    }
-    
     /// Get the last processed timestamp for a ticker
     pub fn last_timestamp(&self, ticker: &str) -> Option<i64> {
         self.tickers.get(ticker).and_then(|data| data.last_timestamp)
@@ -328,66 +309,5 @@ mod tests {
         let ma_value = indicators[0].get();
         assert!(ma_value.is_some());
         assert!((ma_value.unwrap() - 150.0).abs() < 0.01);
-    }
-
-    #[test]
-    fn test_reset_ticker() {
-        let config = IndicatorConfig {
-            enabled: true,
-            specs: vec![
-                IndicatorSpec::MovingAverage {
-                    window: Window::Bars(2),
-                    field: CommonField::Close,
-                },
-            ],
-        };
-        let mut tracker = EquityTracker::new(&config);
-
-        tracker.process_row(&create_test_row("AAPL", 1000, 100.0)).unwrap();
-        tracker.process_row(&create_test_row("AAPL", 2000, 200.0)).unwrap();
-
-        tracker.reset_ticker("AAPL");
-
-        // After reset, should accept earlier timestamp
-        tracker.process_row(&create_test_row("AAPL", 500, 50.0)).unwrap();
-        assert_eq!(tracker.last_timestamp("AAPL"), Some(500));
-    }
-
-    #[test]
-    fn test_clear() {
-        let config = IndicatorConfig {
-            enabled: true,
-            specs: vec![],
-        };
-        let mut tracker = EquityTracker::new(&config);
-
-        tracker.process_row(&create_test_row("AAPL", 1000, 100.0)).unwrap();
-        tracker.process_row(&create_test_row("TSLA", 1000, 200.0)).unwrap();
-
-        assert_eq!(tracker.ticker_count(), 2);
-
-        tracker.clear();
-        assert_eq!(tracker.ticker_count(), 0);
-        assert!(!tracker.has_ticker("AAPL"));
-        assert!(!tracker.has_ticker("TSLA"));
-    }
-
-    #[test]
-    fn test_disabled_indicators() {
-        let config = IndicatorConfig {
-            enabled: false,
-            specs: vec![
-                IndicatorSpec::MovingAverage {
-                    window: Window::Bars(2),
-                    field: CommonField::Close,
-                },
-            ],
-        };
-        let mut tracker = EquityTracker::new(&config);
-
-        tracker.process_row(&create_test_row("AAPL", 1000, 100.0)).unwrap();
-
-        let indicators = tracker.get_indicators("AAPL").unwrap();
-        assert_eq!(indicators.len(), 0);  // No indicators created when disabled
     }
 }

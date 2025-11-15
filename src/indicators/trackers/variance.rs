@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use super::super::window::{Window, WindowConfig};
+use super::super::window::Window;
 use super::WindowTracker;
 
 // ============================================================================
@@ -27,15 +27,12 @@ pub struct VarianceTracker {
 
 impl VarianceTracker {
     /// Create a new VarianceTracker
-    /// 
-    /// Accepts either `Window` or `WindowConfig` (from `.rounded()`)
-    pub fn new(window: impl Into<WindowConfig>) -> Self {
-        let config: WindowConfig = window.into();
+    pub fn new(window: Window) -> Self {
         Self {
             values: VecDeque::new(),
             sum: 0.0,
             sum_sq_diff: 0.0,
-            window: config.window,
+            window,
         }
     }
     

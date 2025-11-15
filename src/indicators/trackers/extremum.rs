@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use super::super::window::{Window, WindowConfig};
+use super::super::window::Window;
 use super::WindowTracker;
 
 // ============================================================================
@@ -76,27 +76,24 @@ pub struct ExtremumTracker {
 impl ExtremumTracker {
     /// Create a new extremum tracker
     ///
-    /// Accepts either `Window` or `WindowConfig` (from `.rounded()`)
-    ///
     /// # Arguments
     /// * `window` - The time window to track
     /// * `track_max` - If true, tracks maximum; if false, tracks minimum
-    pub fn new(window: impl Into<WindowConfig>, track_max: bool) -> Self {
-        let config: WindowConfig = window.into();
+    pub fn new(window: Window, track_max: bool) -> Self {
         Self {
             deque: VecDeque::new(),
-            window: config.window,
+            window,
             track_max,
         }
     }
     
     /// Create a maximum tracker
-    pub fn new_max(window: impl Into<WindowConfig>) -> Self {
+    pub fn new_max(window: Window) -> Self {
         Self::new(window, true)
     }
     
     /// Create a minimum tracker
-    pub fn new_min(window: impl Into<WindowConfig>) -> Self {
+    pub fn new_min(window: Window) -> Self {
         Self::new(window, false)
     }
     

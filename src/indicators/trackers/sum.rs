@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use super::super::window::{Window, WindowConfig};
+use super::super::window::Window;
 use super::WindowTracker;
 
 // ============================================================================
@@ -31,8 +31,6 @@ pub struct SumTracker {
 impl SumTracker {
     /// Create a new SumTracker
     /// 
-    /// Accepts either `Window` or `WindowConfig` (from `.rounded()`)
-    /// 
     /// # Examples
     /// ```
     /// // Without rounding
@@ -41,12 +39,11 @@ impl SumTracker {
     /// // With rounding (aligns to market open)
     /// let tracker = SumTracker::new(Window::Days(1).rounded());
     /// ```
-    pub fn new(window: impl Into<WindowConfig>) -> Self {
-        let config: WindowConfig = window.into();
+    pub fn new(window: Window) -> Self {
         Self {
             values: VecDeque::new(),
             sum: 0.0,
-            window: config.window,
+            window,
         }
     }
     

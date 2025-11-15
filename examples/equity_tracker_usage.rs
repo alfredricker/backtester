@@ -13,7 +13,7 @@ use strategy_tester::equity::master::EquityTracker;
 use strategy_tester::config::{Config, IndicatorSpec, IndicatorConfig};
 use strategy_tester::types::ohlcv::Row;
 use strategy_tester::indicators::{
-    time::Window,
+    window::Window,
     fields::CommonField,
 };
 

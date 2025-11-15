@@ -1,5 +1,5 @@
 use std::collections::VecDeque;
-use super::super::window::{Window, WindowConfig};
+use super::super::window::Window;
 use super::WindowTracker;
 
 // ============================================================================
@@ -34,29 +34,26 @@ pub struct ChangeTracker {
 impl ChangeTracker {
     /// Create a new change tracker
     ///
-    /// Accepts either `Window` or `WindowConfig` (from `.rounded()`)
-    ///
     /// # Arguments
     /// * `window` - The time window to track
     /// * `use_percentage` - If true, calculates percentage change: (new - old) / old * 100
     ///                       If false, calculates absolute change: (new - old)
-    pub fn new(window: impl Into<WindowConfig>, use_percentage: bool) -> Self {
-        let config: WindowConfig = window.into();
+    pub fn new(window: Window, use_percentage: bool) -> Self {
         Self {
             changes: VecDeque::new(),
             prev_value: None,
-            window: config.window,
+            window,
             use_percentage,
         }
     }
     
     /// Create a tracker for absolute changes
-    pub fn absolute(window: impl Into<WindowConfig>) -> Self {
+    pub fn absolute(window: Window) -> Self {
         Self::new(window, false)
     }
     
     /// Create a tracker for percentage changes
-    pub fn percentage(window: impl Into<WindowConfig>) -> Self {
+    pub fn percentage(window: Window) -> Self {
         Self::new(window, true)
     }
     
