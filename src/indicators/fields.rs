@@ -28,7 +28,6 @@ impl CommonField {
     }
 }
 
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PriceField{
     Open,

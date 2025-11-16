@@ -2,6 +2,7 @@
 use crate::indicators::trackers::{SumTracker, WindowTracker};
 use crate::indicators::fields::{PriceField, CommonField};
 use crate::indicators::window::Window;
+use crate::indicators::indicator::Indicator;
 use crate::types::ohlcv::Row;
 
 #[derive(Debug)]
@@ -20,8 +21,10 @@ impl VWAP {
             price_field: pf,
         }
     }
+}
 
-    pub fn update(&mut self, row: &Row) {
+impl Indicator for VWAP {
+    fn update(&mut self, row: &Row) {
         let price = self.price_field.extract(row);
         let volume: f64 = CommonField::Volume.extract(row);
 
@@ -32,7 +35,7 @@ impl VWAP {
         self.volume_tracker.prune(row.timestamp);
     }
 
-    pub fn get(&self) -> Option<f64> {
+    fn get(&self) -> Option<f64> {
         let total_volume = self.volume_tracker.sum();
         if total_volume == 0.0 {
             None
@@ -41,8 +44,12 @@ impl VWAP {
         }
     }
 
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.pv_tracker.clear();
         self.volume_tracker.clear();
+    }
+    
+    fn name(&self) -> &str {
+        "VWAP"
     }
 }

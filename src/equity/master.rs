@@ -18,13 +18,13 @@ pub enum EquityTrackerError {
 #[derive(Debug)]
 struct TickerData {
     /// All indicators being tracked for this ticker
-    indicators: Vec<Indicator>,
+    indicators: Vec<Box<dyn Indicator>>,
     /// Last timestamp processed (for validation)
     last_timestamp: Option<i64>,
 }
 
 impl TickerData {
-    fn new(indicators: Vec<Indicator>) -> Self {
+    fn new(indicators: Vec<Box<dyn Indicator>>) -> Self {
         Self {
             indicators,
             last_timestamp: None,
@@ -56,7 +56,7 @@ impl TickerData {
     }
     
     /// Get a reference to all indicators
-    fn indicators(&self) -> &[Indicator] {
+    fn indicators(&self) -> &[Box<dyn Indicator>] {
         &self.indicators
     }
     
@@ -135,12 +135,12 @@ impl EquityTracker {
     }
     
     /// Get the indicators for a specific ticker
-    pub fn get_indicators(&self, ticker: &str) -> Option<&[Indicator]> {
+    pub fn get_indicators(&self, ticker: &str) -> Option<&[Box<dyn Indicator>]> {
         self.tickers.get(ticker).map(|data| data.indicators())
     }
     
     /// Get mutable access to indicators for a specific ticker
-    pub fn get_indicators_mut(&mut self, ticker: &str) -> Option<&mut Vec<Indicator>> {
+    pub fn get_indicators_mut(&mut self, ticker: &str) -> Option<&mut Vec<Box<dyn Indicator>>> {
         self.tickers.get_mut(ticker).map(|data| &mut data.indicators)
     }
     

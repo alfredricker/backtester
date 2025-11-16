@@ -1,6 +1,7 @@
 use crate::indicators::trackers::{SumTracker, WindowTracker};
 use crate::indicators::fields::CommonField;
 use crate::indicators::window::Window;
+use crate::indicators::indicator::Indicator;
 use crate::types::ohlcv::Row;
 
 /// Average Daily Volume (ADV)
@@ -35,14 +36,6 @@ impl ADV {
             last_day_timestamp: None,
         }
     }
-
-    /// Update with a new bar of data
-    pub fn update(&mut self, row: &Row) {
-        let volume = CommonField::Volume.extract(row);
-        self.current_day_tracker.push(row.timestamp, volume);
-        self.current_day_tracker.prune(row.timestamp);
-        self.last_day_timestamp = Some(row.timestamp);
-    }
     
     /// Call this at market close to record the day's volume
     /// 
@@ -60,23 +53,32 @@ impl ADV {
             self.current_day_tracker.clear();
         }
     }
-
-    /// Get the average daily volume
-    /// 
-    /// Returns None if there aren't enough days of data yet
-    pub fn get(&self) -> Option<f64> {
-        self.daily_avg_tracker.get()
-    }
     
     /// Get the current day's volume so far (not the average)
     pub fn current_day_volume(&self) -> f64 {
         self.current_day_tracker.sum()
     }
+}
+
+impl Indicator for ADV {
+    fn update(&mut self, row: &Row) {
+        let volume = CommonField::Volume.extract(row);
+        self.current_day_tracker.push(row.timestamp, volume);
+        self.current_day_tracker.prune(row.timestamp);
+        self.last_day_timestamp = Some(row.timestamp);
+    }
     
-    /// Reset the indicator
-    pub fn reset(&mut self) {
+    fn get(&self) -> Option<f64> {
+        self.daily_avg_tracker.get()
+    }
+    
+    fn reset(&mut self) {
         self.daily_avg_tracker.clear();
         self.current_day_tracker.clear();
         self.last_day_timestamp = None;
+    }
+    
+    fn name(&self) -> &str {
+        "ADV"
     }
 }

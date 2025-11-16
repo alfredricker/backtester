@@ -1,6 +1,7 @@
 use crate::indicators::trackers::{ChangeTracker, WindowTracker};
 use crate::indicators::fields::CommonField;
 use crate::indicators::window::Window;
+use crate::indicators::indicator::Indicator;
 use crate::types::ohlcv::Row;
 
 /// Relative Strength Index (RSI)
@@ -26,15 +27,17 @@ impl RSI {
     pub fn close(window: Window) -> Self {
         Self::new(window, CommonField::Close)
     }
-    
-    pub fn update(&mut self, row: &Row) {
+}
+
+impl Indicator for RSI {
+    fn update(&mut self, row: &Row) {
         let value = self.field.extract(row);
         self.tracker.push(row.timestamp, value);
         self.tracker.prune(row.timestamp);
     }
     
     /// Get the RSI value (0-100 scale)
-    pub fn get(&self) -> Option<f64> {
+    fn get(&self) -> Option<f64> {
         let avg_gain = self.tracker.average_gain();
         let avg_loss = self.tracker.average_loss();
         
@@ -46,7 +49,11 @@ impl RSI {
         Some(100.0 - (100.0 / (1.0 + rs)))
     }
     
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.tracker.clear();
+    }
+    
+    fn name(&self) -> &str {
+        "RSI"
     }
 }

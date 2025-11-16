@@ -1,6 +1,7 @@
 use crate::indicators::trackers::{SumTracker, WindowTracker};
 use crate::indicators::fields::CommonField;
 use crate::indicators::window::Window;
+use crate::indicators::indicator::Indicator;
 use crate::types::ohlcv::Row;
 
 /// Moving Average using stateful tracking
@@ -17,18 +18,24 @@ impl MovingAverage {
             field,
         }
     }
-    
-    pub fn update(&mut self, row: &Row) {
+}
+
+impl Indicator for MovingAverage {
+    fn update(&mut self, row: &Row) {
         let value = self.field.extract(row);
         self.tracker.push(row.timestamp, value);
         self.tracker.prune(row.timestamp);
     }
     
-    pub fn get(&self) -> Option<f64> {
+    fn get(&self) -> Option<f64> {
         self.tracker.get() // sumtracker get method returns the average
     }
     
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.tracker.clear();
+    }
+    
+    fn name(&self) -> &str {
+        "Moving Average"
     }
 }

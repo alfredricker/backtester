@@ -1,6 +1,7 @@
 use crate::indicators::window::Window;
 use crate::indicators::trackers::{WindowTracker, ExtremumTracker};
 use crate::indicators::fields::CommonField;
+use crate::indicators::indicator::Indicator;
 use crate::types::ohlcv::Row;
 
 /// INDICATORS ARE SIMPLE STRUCTS THAT TRACK THE MINIMUM AMOUNT OF DATA
@@ -18,22 +19,25 @@ impl HighOfPeriod {
             field,
         }
     }
-    
-    /// Update with a new data point
-    pub fn update(&mut self, row: &Row) {
+}
+
+impl Indicator for HighOfPeriod {
+    fn update(&mut self, row: &Row) {
         let value = self.field.extract(row);
         self.tracker.push(row.timestamp, value);
         self.tracker.prune(row.timestamp);
     }
     
-    /// Get the current maximum value
-    pub fn get(&self) -> Option<f64> {
+    fn get(&self) -> Option<f64> {
         self.tracker.get()
     }
     
-    /// Reset the indicator
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.tracker.clear();
+    }
+    
+    fn name(&self) -> &str {
+        "High of Period"
     }
 }
 
@@ -51,18 +55,24 @@ impl LowOfPeriod {
             field,
         }
     }
-    
-    pub fn update(&mut self, row: &Row) {
+}
+
+impl Indicator for LowOfPeriod {
+    fn update(&mut self, row: &Row) {
         let value = self.field.extract(row);
         self.tracker.push(row.timestamp, value);
         self.tracker.prune(row.timestamp);
     }
     
-    pub fn get(&self) -> Option<f64> {
+    fn get(&self) -> Option<f64> {
         self.tracker.get()
     }
     
-    pub fn reset(&mut self) {
+    fn reset(&mut self) {
         self.tracker.clear();
+    }
+    
+    fn name(&self) -> &str {
+        "Low of Period"
     }
 }

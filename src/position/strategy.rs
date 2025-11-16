@@ -10,16 +10,21 @@ pub struct PositionStrategy {
     pub condition: Condition, // can be built from multiple conditions
     pub sizing: SizingStrategy,
     pub order: OrderType,
-    pub action: Action
+    pub action: Action,
+    pub name: String,
 }    
 
 impl PositionStrategy {
-    pub fn new(condition: Condition, sizing: SizingStrategy, order: OrderType, action: Action) -> Self {
+    pub fn new(condition: Condition, sizing: SizingStrategy, order: OrderType, action: Action, name: Option<String>) -> Self {
         Self {
             condition,
             sizing,
             order,
             action,
+            name : match name{
+                Some(name) => name,
+                None => "Untitled".to_string(),
+            }
         }
     }
 }
