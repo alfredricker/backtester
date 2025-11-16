@@ -1,19 +1,25 @@
 
-pub struct EntryStrategy {
-    /// Name of this strategy
+
+
+// could be profit target, time based, stop loss, etc.
+pub struct ExitStrategy {
+    pub condition: Option<Condition>,
+    pub size: SizingStrategy,
+    pub order: OrderType,
+}
+
+pub struct Entry {
+    pub condition: Condition,
+    pub order: OrderType, // order gives you side and size
+    pub size: SizingStrategy,
+    pub exit: Vec<ExitStrategy>, // can have multiple exit strategies
+}
+
+// want <Action, Condition> vec?
+pub struct Strategy {
     pub name: String,
-    /// Conditions that must be met to enter
-    pub conditions: Vec<Box<dyn Event>>,
-    /// How to determine position size
+    pub _condition: Condition, // can be built from multiple conditions
     pub sizing: SizingStrategy,
-    /// Position side (Long/Short)
-    pub side: Side,
-    /// Optional stop loss configuration
-    pub stop_loss: Option<StopLossConfig>,
-    /// Optional take profit configuration
-    pub take_profit: Option<TakeProfitConfig>,
-    /// Optional maximum time in position
-    pub max_time: Option<i64>,
 }
 
 impl EntryStrategy {

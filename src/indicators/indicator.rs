@@ -1,5 +1,5 @@
 use crate::types::ohlcv::Row;
-use super::indicators::{MovingAverage, RSI, HighOfPeriod, LowOfPeriod, VWAP};
+use super::indicators::{MovingAverage, RSI, HighOfPeriod, LowOfPeriod, VWAP, ADV};
 
 /// Macro to define indicators and generate all boilerplate code
 /// 
@@ -77,5 +77,6 @@ define_indicators! {
     HighOfPeriod(HighOfPeriod) => "High of Period",
     LowOfPeriod(LowOfPeriod) => "Low of Period",
     VWAP(VWAP) => "VWAP",
+    ADV(ADV) => "ADV",
 }
 

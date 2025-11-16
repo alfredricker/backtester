@@ -1,13 +1,19 @@
 use crate::types::ohlcv::Row;
 use crate::indicators::indicator::Indicator;
 use crate::indicators::fields::CommonField;
+use std::ops::{BitAnd, BitOr, Not};
 
-// Example usage to create: i1 > i2 and i3 > 1e5
+// Example usage with operator overloading:
 // 
-// let condition = Condition::and(vec![
-//     Condition::gt(Value::Indicator(0), Value::Indicator(1)),  // i1 > i2
-//     Condition::gt(Value::Indicator(2), Value::Constant(1e5)), // i3 > 1e5
-// ]);
+// let condition = Value::Indicator(0).gt(Value::Constant(100.0)) 
+//               & Value::Indicator(1).lt(Value::Constant(200.0));
+//
+// or more complex:
+// let condition_a = Value::Indicator(0).gt(Value::Constant(100.0)) 
+//                 & Value::Indicator(1).lt(Value::Constant(200.0));
+// let condition_b = Value::Indicator(2).eq(Value::Indicator(1)) 
+//                 | Value::Indicator(3).lt(Value::Constant(400.0));
+// let condition_c = condition_a & condition_b;
 
 /// Represents a value that can be compared in a condition
 #[derive(Debug, Clone)]
@@ -29,41 +35,53 @@ impl Value {
             Value::Field(field) => Some(field.extract(row)),
         }
     }
-}
 
-/// Comparison operators
-#[derive(Debug, Clone, Copy)]
-pub enum Comparison {
-    GreaterThan,
-    GreaterThanOrEqual,
-    LessThan,
-    LessThanOrEqual,
-    Equal,
-    NotEqual,
-}
+    /// Greater than comparison
+    pub fn gt(self, other: Value) -> Condition {
+        Condition::GreaterThan(self, other)
+    }
 
-impl Comparison {
-    pub fn evaluate(&self, left: f64, right: f64) -> bool {
-        match self {
-            Comparison::GreaterThan => left > right,
-            Comparison::GreaterThanOrEqual => left >= right,
-            Comparison::LessThan => left < right,
-            Comparison::LessThanOrEqual => left <= right,
-            Comparison::Equal => (left - right).abs() < f64::EPSILON,
-            Comparison::NotEqual => (left - right).abs() >= f64::EPSILON,
-        }
+    /// Greater than or equal comparison
+    pub fn gte(self, other: Value) -> Condition {
+        Condition::GreaterThanOrEqual(self, other)
+    }
+
+    /// Less than comparison
+    pub fn lt(self, other: Value) -> Condition {
+        Condition::LessThan(self, other)
+    }
+
+    /// Less than or equal comparison
+    pub fn lte(self, other: Value) -> Condition {
+        Condition::LessThanOrEqual(self, other)
+    }
+
+    /// Equal comparison
+    pub fn eq(self, other: Value) -> Condition {
+        Condition::Equal(self, other)
+    }
+
+    /// Not equal comparison
+    pub fn ne(self, other: Value) -> Condition {
+        Condition::NotEqual(self, other)
     }
 }
 
 /// A general condition that can be evaluated
 #[derive(Debug, Clone)]
 pub enum Condition {
-    /// Compare two values
-    Compare {
-        left: Value,
-        op: Comparison,
-        right: Value,
-    },
+    /// Greater than comparison
+    GreaterThan(Value, Value),
+    /// Greater than or equal comparison
+    GreaterThanOrEqual(Value, Value),
+    /// Less than comparison
+    LessThan(Value, Value),
+    /// Less than or equal comparison
+    LessThanOrEqual(Value, Value),
+    /// Equal comparison
+    Equal(Value, Value),
+    /// Not equal comparison
+    NotEqual(Value, Value),
     /// Logical AND of multiple conditions
     And(Vec<Condition>),
     /// Logical OR of multiple conditions
@@ -76,11 +94,46 @@ impl Condition {
     /// Evaluate this condition given the current context
     pub fn evaluate(&self, indicators: &[Indicator], row: &Row) -> bool {
         match self {
-            Condition::Compare { left, op, right } => {
+            Condition::GreaterThan(left, right) => {
                 if let (Some(l), Some(r)) = (left.evaluate(indicators, row), right.evaluate(indicators, row)) {
-                    op.evaluate(l, r)
+                    l > r
                 } else {
-                    false // If we can't evaluate, condition is false
+                    false
+                }
+            }
+            Condition::GreaterThanOrEqual(left, right) => {
+                if let (Some(l), Some(r)) = (left.evaluate(indicators, row), right.evaluate(indicators, row)) {
+                    l >= r
+                } else {
+                    false
+                }
+            }
+            Condition::LessThan(left, right) => {
+                if let (Some(l), Some(r)) = (left.evaluate(indicators, row), right.evaluate(indicators, row)) {
+                    l < r
+                } else {
+                    false
+                }
+            }
+            Condition::LessThanOrEqual(left, right) => {
+                if let (Some(l), Some(r)) = (left.evaluate(indicators, row), right.evaluate(indicators, row)) {
+                    l <= r
+                } else {
+                    false
+                }
+            }
+            Condition::Equal(left, right) => {
+                if let (Some(l), Some(r)) = (left.evaluate(indicators, row), right.evaluate(indicators, row)) {
+                    (l - r).abs() < f64::EPSILON
+                } else {
+                    false
+                }
+            }
+            Condition::NotEqual(left, right) => {
+                if let (Some(l), Some(r)) = (left.evaluate(indicators, row), right.evaluate(indicators, row)) {
+                    (l - r).abs() >= f64::EPSILON
+                } else {
+                    false
                 }
             }
             Condition::And(conditions) => {
@@ -94,33 +147,54 @@ impl Condition {
             }
         }
     }
-    
-    /// Builder: Create a greater-than comparison
-    pub fn gt(left: Value, right: Value) -> Self {
-        Condition::Compare { 
-            left, 
-            op: Comparison::GreaterThan, 
-            right 
+}
+
+// Implement & operator for AND
+impl BitAnd for Condition {
+    type Output = Condition;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            // Flatten nested ANDs
+            (Condition::And(mut left), Condition::And(right)) => {
+                left.extend(right);
+                Condition::And(left)
+            }
+            (Condition::And(mut conditions), other) | (other, Condition::And(mut conditions)) => {
+                conditions.push(other);
+                Condition::And(conditions)
+            }
+            (left, right) => Condition::And(vec![left, right]),
         }
     }
-    
-    /// Builder: Create a less-than comparison
-    pub fn lt(left: Value, right: Value) -> Self {
-        Condition::Compare { 
-            left, 
-            op: Comparison::LessThan, 
-            right 
+}
+
+// Implement | operator for OR
+impl BitOr for Condition {
+    type Output = Condition;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        match (self, rhs) {
+            // Flatten nested ORs
+            (Condition::Or(mut left), Condition::Or(right)) => {
+                left.extend(right);
+                Condition::Or(left)
+            }
+            (Condition::Or(mut conditions), other) | (other, Condition::Or(mut conditions)) => {
+                conditions.push(other);
+                Condition::Or(conditions)
+            }
+            (left, right) => Condition::Or(vec![left, right]),
         }
     }
-    
-    /// Builder: Combine multiple conditions with AND
-    pub fn and(conditions: Vec<Condition>) -> Self {
-        Condition::And(conditions)
-    }
-    
-    /// Builder: Combine multiple conditions with OR
-    pub fn or(conditions: Vec<Condition>) -> Self {
-        Condition::Or(conditions)
+}
+
+// Implement ! operator for NOT
+impl Not for Condition {
+    type Output = Condition;
+
+    fn not(self) -> Self::Output {
+        Condition::Not(Box::new(self))
     }
 }
 
