@@ -13,8 +13,3 @@ impl Side{
         }
     }
 }
-
-pub enum Auction{
-    Open,
-    Close
-}

@@ -7,8 +7,13 @@ use crate::indicators::fields::{CommonField, PriceField};
 /// Global configuration for strategy testing
 #[derive(Debug, Clone)]
 pub struct Config {
+    pub buying_power: f64,
+    /// Market hours and trading sessions
     pub market_hours: MarketHours,
+    /// Configuration for which indicators to track for each ticker
     pub indicator_config: IndicatorConfig,
+    /// Maximum time in position (in trading minutes, hours, or days)
+    pub max_position_time: Option<Window>,
 }
 
 /// Specification for creating indicators
