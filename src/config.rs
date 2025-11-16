@@ -125,6 +125,8 @@ impl Default for Config {
         Config {
             market_hours: MarketHours::default(),
             indicator_config: IndicatorConfig::default(),
+            max_position_time: Some(Window::Days(30)),
+            buying_power: 1e5,
         }
     }
 }

@@ -3,7 +3,6 @@ mod position;
 mod config;
 mod indicators;
 mod types;
-mod events;
 mod equity;
 
 use chrono::NaiveDate;

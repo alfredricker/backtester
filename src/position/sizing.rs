@@ -1,3 +1,5 @@
+use crate::config::Config;
+use crate::types::ohlcv::Row;
 /// Strategy for determining position size
 #[derive(Debug, Clone, Copy)]
 pub enum SizingStrategy {

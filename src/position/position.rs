@@ -1,5 +1,7 @@
 use std::collections::HashMap;
-
+use crate::position::side::Side;
+use crate::indicators::indicator::Indicator;
+use crate::types::ohlcv::Row;
 /// Errors that can occur during position management
 #[derive(Debug, thiserror::Error)]
 pub enum PositionError {
@@ -30,7 +32,7 @@ pub struct Position {
     /// Ticker symbol
     pub ticker: String,
     /// Position side (Long/Short)
-    pub side: PositionSide,
+    pub side: Side,
     /// Number of shares
     pub size: i64,
     /// Entry price
@@ -42,15 +44,7 @@ pub struct Position {
     /// Exit timestamp (None if position is still open)
     pub exit_timestamp: Option<i64>,
     /// Current state
-    pub state: PositionState,
-    /// Exit conditions for this position
-    pub exit_conditions: Vec<Box<dyn Event>>,
-    /// Stop loss price (optional)
-    pub stop_loss: Option<f64>,
-    /// Take profit price (optional)
-    pub take_profit: Option<f64>,
-    /// Maximum time in position (nanoseconds, optional)
-    pub max_time: Option<i64>,
+    pub state: PositionState
 }
 
 impl Position {
@@ -58,7 +52,7 @@ impl Position {
     pub fn new(
         id: String,
         ticker: String,
-        side: PositionSide,
+        side: Side,
         size: i64,
         entry_price: f64,
         entry_timestamp: i64,
@@ -73,79 +67,7 @@ impl Position {
             exit_price: None,
             exit_timestamp: None,
             state: PositionState::Open,
-            exit_conditions: Vec::new(),
-            stop_loss: None,
-            take_profit: None,
-            max_time: None,
         }
-    }
-    
-    /// Add an exit condition to this position
-    pub fn add_exit_condition(&mut self, condition: Box<dyn Event>) {
-        self.exit_conditions.push(condition);
-    }
-    
-    /// Set stop loss price
-    pub fn with_stop_loss(mut self, stop_loss: f64) -> Self {
-        self.stop_loss = Some(stop_loss);
-        self
-    }
-    
-    /// Set take profit price
-    pub fn with_take_profit(mut self, take_profit: f64) -> Self {
-        self.take_profit = Some(take_profit);
-        self
-    }
-    
-    /// Set maximum time in position
-    pub fn with_max_time(mut self, max_time: i64) -> Self {
-        self.max_time = Some(max_time);
-        self
-    }
-    
-    /// Check if any exit conditions are met
-    pub fn check_exit_conditions(
-        &mut self, 
-        indicators: &[Indicator], 
-        row: &Row
-    ) -> bool {
-        // Check stop loss
-        if let Some(stop_loss) = self.stop_loss {
-            let should_exit = match self.side {
-                PositionSide::Long => row.close <= stop_loss,
-                PositionSide::Short => row.close >= stop_loss,
-            };
-            if should_exit {
-                return true;
-            }
-        }
-        
-        // Check take profit
-        if let Some(take_profit) = self.take_profit {
-            let should_exit = match self.side {
-                PositionSide::Long => row.close >= take_profit,
-                PositionSide::Short => row.close <= take_profit,
-            };
-            if should_exit {
-                return true;
-            }
-        }
-        
-        // Check max time
-        if let Some(max_time) = self.max_time {
-            if row.timestamp - self.entry_timestamp >= max_time {
-                return true;
-            }
-        }
-        
-        // Check custom exit conditions
-        for condition in &mut self.exit_conditions {
-            if condition.check(indicators, row) {
-                return true;
-            }
-        }
-        
-        false
     }
     
     /// Close the position
@@ -164,8 +86,9 @@ impl Position {
     pub fn pnl(&self) -> Option<f64> {
         self.exit_price.map(|exit_price| {
             let price_diff = match self.side {
-                PositionSide::Long => exit_price - self.entry_price,
-                PositionSide::Short => self.entry_price - exit_price,
+                Side::Long => exit_price - self.entry_price,
+                Side::Short => self.entry_price - exit_price,
+                Side::None => 0.0,
             };
             price_diff * self.size as f64
         })
@@ -175,8 +98,9 @@ impl Position {
     pub fn pnl_percent(&self) -> Option<f64> {
         self.exit_price.map(|exit_price| {
             let price_diff = match self.side {
-                PositionSide::Long => exit_price - self.entry_price,
-                PositionSide::Short => self.entry_price - exit_price,
+                Side::Long => exit_price - self.entry_price,
+                Side::Short => self.entry_price - exit_price,
+                Side::None => 0.0,
             };
             (price_diff / self.entry_price) * 100.0
         })
@@ -185,8 +109,9 @@ impl Position {
     /// Get unrealized P&L based on current price
     pub fn unrealized_pnl(&self, current_price: f64) -> f64 {
         let price_diff = match self.side {
-            PositionSide::Long => current_price - self.entry_price,
-            PositionSide::Short => self.entry_price - current_price,
+            Side::Long => current_price - self.entry_price,
+            Side::Short => self.entry_price - current_price,
+            Side::None => 0.0,
         };
         price_diff * self.size as f64
     }

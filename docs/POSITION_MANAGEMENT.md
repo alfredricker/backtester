@@ -55,7 +55,7 @@ Entry strategies combine multiple conditions using the `Event` trait:
 ```rust
 let mut strategy = EntryStrategy::new(
     "My Strategy".to_string(),
-    PositionSide::Long,
+    Side::Long,
     SizingStrategy::PercentOfAccount(2.0),
 );
 
@@ -155,7 +155,7 @@ let mut position_manager = PositionManager::new(100_000.0);
 // 3. Define Entry Strategy
 let mut strategy = EntryStrategy::new(
     "MA Cross + RSI".to_string(),
-    PositionSide::Long,
+    Side::Long,
     SizingStrategy::PercentOfAccount(2.0),
 );
 
@@ -286,7 +286,7 @@ You can run multiple strategies simultaneously:
 // Long strategy
 let mut long_strategy = EntryStrategy::new(
     "Long MA Cross".to_string(),
-    PositionSide::Long,
+    Side::Long,
     SizingStrategy::PercentOfAccount(2.0),
 );
 position_manager.add_entry_strategy(long_strategy);
@@ -294,7 +294,7 @@ position_manager.add_entry_strategy(long_strategy);
 // Short strategy
 let mut short_strategy = EntryStrategy::new(
     "Short MA Cross".to_string(),
-    PositionSide::Short,
+    Side::Short,
     SizingStrategy::PercentOfAccount(2.0),
 );
 position_manager.add_entry_strategy(short_strategy);

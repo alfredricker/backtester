@@ -1,4 +1,4 @@
-use super::side::Side as PositionSide;
+use super::side::Side as Side;
 
 #[derive(Debug, Clone, Copy)]
 pub enum OrderDistance {
@@ -14,29 +14,29 @@ pub enum OrderDistance {
 
 impl OrderDistance {
     /// Calculate the actual price given entry price and side
-    pub fn calculate(&self, entry_price: f64, side: &PositionSide, _atr: Option<f64>) -> f64 {
+    pub fn calculate(&self, entry_price: f64, side: &Side, _atr: Option<f64>) -> f64 {
         match self {
             OrderDistance::Fixed(price) => *price,
             OrderDistance::Percent(pct) => {
                 match side {
-                    PositionSide::Long => entry_price * (1.0 + pct / 100.0),
-                    PositionSide::Short => entry_price * (1.0 - pct / 100.0),
-                    PositionSide::None => entry_price,
+                    Side::Long => entry_price * (1.0 + pct / 100.0),
+                    Side::Short => entry_price * (1.0 - pct / 100.0),
+                    Side::None => entry_price,
                 }
             }
             OrderDistance::Points(pts) => {
                 match side {
-                    PositionSide::Long => entry_price + pts,
-                    PositionSide::Short => entry_price - pts,
-                    PositionSide::None => entry_price,
+                    Side::Long => entry_price + pts,
+                    Side::Short => entry_price - pts,
+                    Side::None => entry_price,
                 }
             }
             OrderDistance::ATR(multiple) => {
                 if let Some(atr) = _atr {
                     match side {
-                        PositionSide::Long => entry_price + (atr * multiple),
-                        PositionSide::Short => entry_price - (atr * multiple),
-                        PositionSide::None => entry_price,
+                        Side::Long => entry_price + (atr * multiple),
+                        Side::Short => entry_price - (atr * multiple),
+                        Side::None => entry_price,
                     }
                 } else {
                     entry_price

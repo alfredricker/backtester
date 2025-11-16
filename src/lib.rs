@@ -5,7 +5,6 @@ pub mod position;
 pub mod config;
 pub mod indicators;
 pub mod types;
-pub mod events;
 pub mod equity;
 pub mod strategy;
 
