@@ -29,7 +29,7 @@ impl Conditionable for Box<dyn Indicator> {
 
 /// A general condition that can be evaluated. Types possible for the generics are f64, CommonField
 #[derive(Debug, Clone)]
-struct Condition<L: Conditionable, R: Conditionable> {
+pub struct Condition<L: Conditionable, R: Conditionable> {
     left: L,
     right: R
 }
