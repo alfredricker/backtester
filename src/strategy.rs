@@ -1,7 +1,5 @@
-use crate::position::condition::{Condition,Conditionable};
-use crate::position::side::Side;
+use crate::position::condition::Conditionable;
 use crate::types::ohlcv::Row;
-use crate::indicators::indicator::Indicator;
 use crate::position::strategy::PositionStrategy;
 
 pub struct Strategy<L:Conditionable,R:Conditionable> {
@@ -15,6 +13,12 @@ impl<L:Conditionable,R:Conditionable> Strategy<L,R> {
         Self {
             name,
             position_strategies,
+        }
+    }
+
+    pub fn update(&mut self, row: &Row) {
+        for s in &mut self.position_strategies {
+            s.update(row);
         }
     }
 }

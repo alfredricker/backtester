@@ -1,6 +1,8 @@
 use crate::position::sizing::SizingStrategy;
 use crate::position::condition::{Condition,Conditionable};
 use crate::position::order::OrderType;
+use crate::types::ohlcv::Row;
+
 // could be profit target, time based, stop loss, etc.
 pub enum Action {
     Entry,
@@ -23,5 +25,9 @@ impl<L: Conditionable, R:Conditionable> PositionStrategy<L,R> {
             action,
             name : name.unwrap_or("Untitled".to_string()),
         }
+    }
+
+    pub fn update(&mut self, row: &Row) {
+        self.condition.update(row);
     }
 }

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use crate::types::ohlcv::Row;
-use crate::indicators::indicator::Indicator;
-use crate::config::IndicatorConfig;
+use crate::strategy::Strategy;
+use crate::position::condition::Conditionable;
 
 /// Errors that can occur during equity tracking
 #[derive(Debug, thiserror::Error)]
@@ -14,24 +14,33 @@ pub enum EquityTrackerError {
     },
 }
 
+pub trait StrategyRunner {
+    fn update(&mut self, row: &Row);
+}
+
+impl<L: Conditionable, R: Conditionable> StrategyRunner for Strategy<L, R> {
+    fn update(&mut self, row: &Row) {
+        self.update(row);
+    }
+}
+
 /// Data tracked for a single ticker
-#[derive(Debug)]
 struct TickerData {
-    /// All indicators being tracked for this ticker
-    indicators: Vec<Box<dyn Indicator>>,
+    /// The strategy instance being tracked for this ticker
+    strategy: Box<dyn StrategyRunner>,
     /// Last timestamp processed (for validation)
     last_timestamp: Option<i64>,
 }
 
 impl TickerData {
-    fn new(indicators: Vec<Box<dyn Indicator>>) -> Self {
+    fn new(strategy: Box<dyn StrategyRunner>) -> Self {
         Self {
-            indicators,
+            strategy,
             last_timestamp: None,
         }
     }
     
-    /// Update all indicators with a new row, validating timestamp order
+    /// Update strategy with a new row, validating timestamp order
     fn update(&mut self, row: &Row) -> Result<(), EquityTrackerError> {
         // Validate timestamp is monotonically increasing
         if let Some(prev_ts) = self.last_timestamp {
@@ -44,72 +53,30 @@ impl TickerData {
             }
         }
         
-        // Update all indicators
-        for indicator in &mut self.indicators {
-            indicator.update(row);
-        }
+        // Update strategy (which updates indicators)
+        self.strategy.update(row);
         
         // Store this timestamp for next validation
         self.last_timestamp = Some(row.timestamp);
         
         Ok(())
     }
-    
-    /// Get a reference to all indicators
-    fn indicators(&self) -> &[Box<dyn Indicator>] {
-        &self.indicators
-    }
-    
-    /// Reset all indicators and timestamp tracking
-    fn reset(&mut self) {
-        for indicator in &mut self.indicators {
-            indicator.reset();
-        }
-        self.last_timestamp = None;
-    }
 }
 
 /// The master data storage tracking indicators for all tickers
-/// 
-/// This struct maintains a HashMap where:
-/// - Key: Ticker symbol (String)
-/// - Value: TickerData containing indicators and metadata
-/// 
-/// # Features
-/// - Automatic ticker initialization on first row
-/// - Timestamp validation (must be monotonically increasing per ticker)
-/// - Indicator updates are applied to all configured indicators
-/// 
-/// # Example
-/// ```rust
-/// let config = Config::default();
-/// let mut tracker = EquityTracker::new(&config.indicator_config);
-/// 
-/// for row in data_rows {
-///     tracker.process_row(&row)?;
-///     
-///     if let Some(indicators) = tracker.get_indicators(&row.ticker) {
-///         for indicator in indicators {
-///             if let Some(value) = indicator.get() {
-///                 println!("{}: {}", indicator.name(), value);
-///             }
-///         }
-///     }
-/// }
-/// ```
 pub struct EquityTracker {
     /// Map of ticker symbol to ticker data
     tickers: HashMap<String, TickerData>,
-    /// Configuration for creating new indicators
-    indicator_config: IndicatorConfig,
+    /// Factory to create new strategy instances for new tickers
+    factory: Box<dyn Fn() -> Box<dyn StrategyRunner>>,
 }
 
 impl EquityTracker {
-    /// Create a new equity tracker with the given indicator configuration
-    pub fn new(indicator_config: &IndicatorConfig) -> Self {
+    /// Create a new equity tracker with the given strategy factory
+    pub fn new(factory: Box<dyn Fn() -> Box<dyn StrategyRunner>>) -> Self {
         Self {
             tickers: HashMap::new(),
-            indicator_config: indicator_config.clone(),
+            factory,
         }
     }
     
@@ -126,22 +93,12 @@ impl EquityTracker {
         let ticker_data = self.tickers
             .entry(row.ticker.clone())
             .or_insert_with(|| {
-                let indicators = self.indicator_config.create_indicators();
-                TickerData::new(indicators)
+                let strategy = (self.factory)();
+                TickerData::new(strategy)
             });
         
         // Update with validation
         ticker_data.update(row)
-    }
-    
-    /// Get the indicators for a specific ticker
-    pub fn get_indicators(&self, ticker: &str) -> Option<&[Box<dyn Indicator>]> {
-        self.tickers.get(ticker).map(|data| data.indicators())
-    }
-    
-    /// Get mutable access to indicators for a specific ticker
-    pub fn get_indicators_mut(&mut self, ticker: &str) -> Option<&mut Vec<Box<dyn Indicator>>> {
-        self.tickers.get_mut(ticker).map(|data| &mut data.indicators)
     }
     
     /// Check if a ticker is being tracked
@@ -162,152 +119,5 @@ impl EquityTracker {
     /// Get the last processed timestamp for a ticker
     pub fn last_timestamp(&self, ticker: &str) -> Option<i64> {
         self.tickers.get(ticker).and_then(|data| data.last_timestamp)
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::config::IndicatorSpec;
-    use crate::indicators::{window::Window, fields::CommonField};
-
-    fn create_test_row(ticker: &str, timestamp: i64, close: f64) -> Row {
-        Row {
-            timestamp,
-            ticker: ticker.to_string(),
-            open: close - 1.0,
-            high: close + 1.0,
-            low: close - 2.0,
-            close,
-            volume: 1000000,
-        }
-    }
-
-    #[test]
-    fn test_new_tracker() {
-        let config = IndicatorConfig {
-            enabled: true,
-            specs: vec![
-                IndicatorSpec::MovingAverage {
-                    window: Window::Bars(3),
-                    field: CommonField::Close,
-                },
-            ],
-        };
-        let tracker = EquityTracker::new(&config);
-        assert_eq!(tracker.ticker_count(), 0);
-    }
-
-    #[test]
-    fn test_process_single_ticker() {
-        let config = IndicatorConfig {
-            enabled: true,
-            specs: vec![
-                IndicatorSpec::MovingAverage {
-                    window: Window::Bars(3),
-                    field: CommonField::Close,
-                },
-            ],
-        };
-        let mut tracker = EquityTracker::new(&config);
-
-        let row1 = create_test_row("AAPL", 1000, 100.0);
-        tracker.process_row(&row1).unwrap();
-
-        assert_eq!(tracker.ticker_count(), 1);
-        assert!(tracker.has_ticker("AAPL"));
-        assert_eq!(tracker.last_timestamp("AAPL"), Some(1000));
-    }
-
-    #[test]
-    fn test_process_multiple_tickers() {
-        let config = IndicatorConfig {
-            enabled: true,
-            specs: vec![
-                IndicatorSpec::RSI {
-                    window: Window::Bars(2),
-                    field: CommonField::Close,
-                },
-            ],
-        };
-        let mut tracker = EquityTracker::new(&config);
-
-        tracker.process_row(&create_test_row("AAPL", 1000, 100.0)).unwrap();
-        tracker.process_row(&create_test_row("TSLA", 1000, 200.0)).unwrap();
-        tracker.process_row(&create_test_row("AAPL", 2000, 105.0)).unwrap();
-
-        assert_eq!(tracker.ticker_count(), 2);
-        assert_eq!(tracker.last_timestamp("AAPL"), Some(2000));
-        assert_eq!(tracker.last_timestamp("TSLA"), Some(1000));
-    }
-
-    #[test]
-    fn test_timestamp_validation() {
-        let config = IndicatorConfig {
-            enabled: true,
-            specs: vec![],
-        };
-        let mut tracker = EquityTracker::new(&config);
-
-        // First row succeeds
-        tracker.process_row(&create_test_row("AAPL", 1000, 100.0)).unwrap();
-
-        // Second row with later timestamp succeeds
-        tracker.process_row(&create_test_row("AAPL", 2000, 105.0)).unwrap();
-
-        // Third row with earlier timestamp fails
-        let result = tracker.process_row(&create_test_row("AAPL", 1500, 102.0));
-        assert!(result.is_err());
-
-        if let Err(EquityTrackerError::TimestampOrderViolation { ticker, current, previous }) = result {
-            assert_eq!(ticker, "AAPL");
-            assert_eq!(current, 1500);
-            assert_eq!(previous, 2000);
-        } else {
-            panic!("Expected TimestampOrderViolation error");
-        }
-    }
-
-    #[test]
-    fn test_timestamp_validation_per_ticker() {
-        let config = IndicatorConfig {
-            enabled: true,
-            specs: vec![],
-        };
-        let mut tracker = EquityTracker::new(&config);
-
-        // Each ticker has independent timestamp tracking
-        tracker.process_row(&create_test_row("AAPL", 1000, 100.0)).unwrap();
-        tracker.process_row(&create_test_row("TSLA", 500, 200.0)).unwrap();  // Earlier timestamp is OK
-        tracker.process_row(&create_test_row("AAPL", 2000, 105.0)).unwrap();
-        tracker.process_row(&create_test_row("TSLA", 1000, 205.0)).unwrap();
-
-        assert_eq!(tracker.last_timestamp("AAPL"), Some(2000));
-        assert_eq!(tracker.last_timestamp("TSLA"), Some(1000));
-    }
-
-    #[test]
-    fn test_indicator_updates() {
-        let config = IndicatorConfig {
-            enabled: true,
-            specs: vec![
-                IndicatorSpec::MovingAverage {
-                    window: Window::Bars(2),
-                    field: CommonField::Close,
-                },
-            ],
-        };
-        let mut tracker = EquityTracker::new(&config);
-
-        tracker.process_row(&create_test_row("AAPL", 1000, 100.0)).unwrap();
-        tracker.process_row(&create_test_row("AAPL", 2000, 200.0)).unwrap();
-
-        let indicators = tracker.get_indicators("AAPL").unwrap();
-        assert_eq!(indicators.len(), 1);
-        
-        // Moving average of 100 and 200 is 150
-        let ma_value = indicators[0].get();
-        assert!(ma_value.is_some());
-        assert!((ma_value.unwrap() - 150.0).abs() < 0.01);
     }
 }

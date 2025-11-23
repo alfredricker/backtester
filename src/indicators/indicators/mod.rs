@@ -4,6 +4,7 @@ pub mod acv;
 pub mod adv;
 pub mod highLow;
 pub mod movingAverage;
+pub mod momentum;
 pub mod rsi;
 pub mod vwap;
 
@@ -14,4 +15,4 @@ pub use highLow::{HighOfPeriod, LowOfPeriod};
 pub use movingAverage::MovingAverage;
 pub use rsi::RSI;
 pub use vwap::VWAP;
-
+pub use momentum::Momentum;
