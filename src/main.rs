@@ -4,6 +4,9 @@ mod config;
 mod indicators;
 mod types;
 mod equity;
+mod backtest;
+mod strategy;
+mod strategies;
 
 use chrono::NaiveDate;
 fn main() {
