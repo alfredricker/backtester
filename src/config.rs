@@ -1,8 +1,5 @@
 use chrono::NaiveTime;
-use crate::indicators::indicator::Indicator;
-use crate::indicators::indicators::{MovingAverage, RSI, HighOfPeriod, LowOfPeriod, VWAP};
 use crate::indicators::window::Window;
-use crate::indicators::fields::{CommonField, PriceField};
 
 /// Global configuration for strategy testing
 #[derive(Debug, Clone)]
@@ -12,8 +9,11 @@ pub struct Config {
     pub market_hours: MarketHours,
     /// Maximum time in position (in trading minutes, hours, or days)
     pub max_position_time: Option<Window>,
-    // slippage
-    pub slippage: f64
+    /// slippage
+    pub slippage: f64,
+    /// replace orders? How do you replace positions
+    pub replacement_strategy: ReplacementStrategy,
+
 }
 
 /// Configuration for market hours and trading sessions
@@ -39,7 +39,8 @@ impl Default for Config {
             market_hours: MarketHours::default(),
             max_position_time: Some(Window::Days(30)),
             starting_buying_power: 1e5,
-            slippage: 0.001 // 0.1% slippage
+            slippage: 0.001, // 0.1% slippage
+            replacement_strategy: ReplacementStrategy::Cancel,
         }
     }
 }
@@ -83,6 +84,16 @@ impl MarketHours {
         time >= earliest && time <= latest
     }
 }
+
+#[derive(Debug,Clone)]
+pub enum ReplacementStrategy {
+    Queue, // queue up positions that can't be filled because of bp constraints, check if they can be filled in on a FI basis once bp is freed
+    ReplaceOldest, // automatically replace the oldest position that was filled
+    ReplaceNewest, // automatically replace the newest position that was filled
+    ReplaceSignal, // replace by weakest signal (if new position signal is stronger than weakest signal) 
+    Cancel, // cancel the pending order, keep portfolio as is
+}
+
 
 // Global static config - in a real app you'd use lazy_static or once_cell
 // For now, we'll pass it around or use thread_local

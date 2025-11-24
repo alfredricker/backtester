@@ -1,5 +1,6 @@
 use crate::config::Config;
 use crate::types::ohlcv::Row;
+use crate::backtest::signal::Signal;
 /// Strategy for determining position size
 #[derive(Debug, Clone, Copy)]
 pub enum SizingStrategy {
@@ -7,15 +8,17 @@ pub enum SizingStrategy {
     Fixed(i64),
     /// Fixed dollar amount
     FixedDollar(f64),
-    /// Percentage of account value
+    /// Percentage of account value (buying power)
     PercentOfAccount(f64),
     /// Risk-based sizing (risk % of account, requires stop loss)
     RiskBased { risk_percent: f64, stop_distance: f64 },
+    /// signal based, pass function that takes in signal and outputs f64
+    SignalBased(fn(Signal) -> f64),
 }
 
 impl SizingStrategy {
     /// Calculate the number of shares to trade
-    pub fn calculate(&self, row: &Row, account_value: f64) -> i64 {
+    pub fn calculate(&self, row: &Row, account_value: f64, _signal: Option<&Signal>) -> i64 {
         match self {
             SizingStrategy::Fixed(shares) => *shares,
             SizingStrategy::FixedDollar(amount) => {
@@ -28,6 +31,9 @@ impl SizingStrategy {
             SizingStrategy::RiskBased { risk_percent, stop_distance } => {
                 let risk_amount = account_value * (risk_percent / 100.0);
                 (risk_amount / stop_distance).floor() as i64
+            }
+            SizingStrategy::SignalBased(func) => {
+                0 // @TODO: implement this
             }
         }
     }

@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use crate::{config::Config, position::side::Side};
+use crate::{config, position::side::Side};
 use super::signal::Signal;
 use crate::position::order::OrderType;
 
@@ -24,18 +24,18 @@ impl Position {
     }
 }
 
+// instead of Position could do a "Status" struct with Deque<Order> for pending orders,
+
 pub struct Portfolio {
     pub buying_power: f64,
     pub positions: HashMap<String, Position>,
-    pub config: Config,
 }
 
 impl Portfolio {
-    pub fn new(config: Config) -> Self {
+    pub fn new() -> Self {
         Self {
-            buying_power: config.starting_buying_power,
+            buying_power: config::get_config().starting_buying_power,
             positions: HashMap::new(),
-            config,
         }
     }
 
@@ -51,8 +51,8 @@ impl Portfolio {
         match &signal.signal_type {
             SignalType::Trigger(order_type) => {
                 match order_type {
-                    OrderType::MarketBuy(qty) => self.execute_buy(&signal.ticker, *qty, price),
-                    OrderType::MarketSell(qty) => self.execute_sell(&signal.ticker, *qty, price),
+                    OrderType::MarketBuy() => self.execute_buy(&signal.ticker, *qty, price),
+                    OrderType::MarketSell() => self.execute_sell(&signal.ticker, *qty, price),
                     _ => println!("Unsupported order type for simple backtest: {:?}", order_type),
                 }
             },
@@ -62,10 +62,12 @@ impl Portfolio {
         }
     }
 
-    fn execute_buy(&mut self, ticker: &str, quantity: i64, price: f64) {
+    pub fn submit_order(&mut self, order: &Order){}
+
+    fn check_orders(&mut self, ticker: &str, row: &Row) {
         let cost = quantity as f64 * price;
-        // Simple slippage model: add 0.01% to price
-        let slippage = cost * 0.0001; 
+        // Simple slippage model: add 0.1% to price
+        let slippage = cost * 0.001; 
         let total_cost = cost + slippage;
 
         if total_cost > self.buying_power {
