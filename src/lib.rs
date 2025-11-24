@@ -5,6 +5,6 @@ pub mod position;
 pub mod config;
 pub mod indicators;
 pub mod types;
-pub mod equity;
+pub mod backtest;
 pub mod strategy;
-
+pub mod utils;

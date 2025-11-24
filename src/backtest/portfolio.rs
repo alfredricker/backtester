@@ -1,15 +1,27 @@
 use std::collections::HashMap;
-use crate::config::Config;
+use crate::{config::Config, position::side::Side};
 use super::signal::Signal;
 use crate::position::order::OrderType;
 
 #[derive(Debug, Clone)]
 pub struct Position {
     pub ticker: String,
+    pub side: Side,
     pub quantity: i64,
     pub average_entry_price: f64,
     pub current_price: f64,
-    // We could track unrealized PnL here
+}
+
+impl Position {
+    pub fn pnl(&self) -> f64 {
+        let c: f64;
+        match self.side {
+            Side::Long => c = 1.,
+            Side::Short => c = -1.,
+            Side::None => c = 0.
+        };
+        c*(self.quantity as f64)*(self.average_entry_price - self.current_price)
+    }
 }
 
 pub struct Portfolio {
@@ -21,7 +33,7 @@ pub struct Portfolio {
 impl Portfolio {
     pub fn new(config: Config) -> Self {
         Self {
-            buying_power: config.buying_power,
+            buying_power: config.starting_buying_power,
             positions: HashMap::new(),
             config,
         }

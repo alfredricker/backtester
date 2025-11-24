@@ -7,11 +7,13 @@ use crate::indicators::fields::{CommonField, PriceField};
 /// Global configuration for strategy testing
 #[derive(Debug, Clone)]
 pub struct Config {
-    pub buying_power: f64,
+    pub starting_buying_power: f64,
     /// Market hours and trading sessions
     pub market_hours: MarketHours,
     /// Maximum time in position (in trading minutes, hours, or days)
     pub max_position_time: Option<Window>,
+    // slippage
+    pub slippage: f64
 }
 
 /// Configuration for market hours and trading sessions
@@ -36,7 +38,8 @@ impl Default for Config {
         Config {
             market_hours: MarketHours::default(),
             max_position_time: Some(Window::Days(30)),
-            buying_power: 1e5,
+            starting_buying_power: 1e5,
+            slippage: 0.001 // 0.1% slippage
         }
     }
 }

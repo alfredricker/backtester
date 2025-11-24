@@ -1,5 +1,7 @@
 use crate::backtest::context::TickerContext;
 use crate::backtest::signal::Signal;
+use crate::types::ohlcv::Row;
+use crate::config::Config;
 
 /// Trait for implementing trading strategies
 pub trait Strategy {
