@@ -34,6 +34,14 @@ impl TickerContext {
     pub fn get_indicator(&self, name: &str) -> Option<f64> {
         self.indicators.get(name).and_then(|ind| ind.get())
     }
+
+    /// Get all current indicator values
+    pub fn get_indicator_values(&self) -> HashMap<String, f64> {
+        self.indicators
+            .iter()
+            .filter_map(|(name, ind)| ind.get().map(|val| (name.clone(), val)))
+            .collect()
+    }
     
     /// Get a mutable reference to an indicator (rarely needed by strategies, mostly for setup)
     pub fn get_indicator_mut(&mut self, name: &str) -> Option<&mut Box<dyn Indicator>> {

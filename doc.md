@@ -1,0 +1,1 @@
+A good strategy idea to test is reversal momentum. Say you have a stock down a 25% over a month at its low but it starts to pick up some momentum.

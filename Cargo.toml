@@ -7,3 +7,6 @@ edition = "2021"
 polars = { version = "0.51.0", features = ["parquet", "lazy"] }
 chrono = "0.4"
 thiserror = "1.0"
+serde = { version = "1.0.228", features = ["derive"] }
+csv = "1.4.0"
+uuid = { version = "1.19.0", features = ["v4", "fast-rng", "macro-diagnostics"] }

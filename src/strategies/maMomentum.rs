@@ -2,7 +2,9 @@ use crate::strategy::Strategy;
 use crate::backtest::context::TickerContext;
 use crate::backtest::signal::Signal;
 use crate::position::order::OrderType;
-use crate::indicators::{MovingAverage, Window, CommonField};
+use crate::indicators::indicators::MovingAverage;
+use crate::indicators::window::Window;
+use crate::indicators::fields::CommonField;
 
 pub struct MaMomentumStrategy {
     // State to track crossovers
@@ -50,16 +52,14 @@ impl Strategy for MaMomentumStrategy {
             if curr30 > curr60 && prev30 <= prev60 {
                 signals.push(Signal::new_trigger(
                     context.ticker.clone(),
-                    OrderType::MarketBuy(100),
-                    "MA30 crossed above MA60".to_string()
+                    OrderType::MarketBuy()
                 ));
             }
             // Cross Below (Exit)
             else if curr30 < curr60 && prev30 >= prev60 {
                  signals.push(Signal::new_trigger(
                     context.ticker.clone(),
-                    OrderType::MarketSell(100),
-                    "MA30 crossed below MA60".to_string()
+                    OrderType::MarketSell()
                 ));
             }
         }

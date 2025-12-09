@@ -3,10 +3,10 @@ mod position;
 mod config;
 mod indicators;
 mod types;
-mod equity;
 mod backtest;
 mod strategy;
 mod strategies;
+mod utils;
 
 use chrono::NaiveDate;
 fn main() {

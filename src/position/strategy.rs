@@ -3,7 +3,10 @@ use crate::position::condition::{Condition,Conditionable};
 use crate::position::order::OrderType;
 use crate::types::ohlcv::Row;
 
+use serde::Serialize;
+
 // could be profit target, time based, stop loss, etc.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum Action {
     Entry,
     Exit

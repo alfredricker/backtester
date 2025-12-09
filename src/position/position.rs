@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use serde::Serialize;
 use crate::position::side::Side;
 use crate::indicators::indicator::Indicator;
 use crate::types::ohlcv::Row;
@@ -16,7 +17,7 @@ pub enum PositionError {
 }
 
 /// State of a position
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 pub enum PositionState {
     /// Position is open and active
     Open,
@@ -25,7 +26,7 @@ pub enum PositionState {
 }
 
 /// Represents an open or closed position
-#[derive(Debug)]
+#[derive(Debug, Serialize, Clone)]
 pub struct Position {
     /// Unique identifier for this position
     pub id: String,
