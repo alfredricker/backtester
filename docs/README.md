@@ -29,22 +29,26 @@ To run with verbose output:
 RUST_LOG=debug cargo run
 ```
 
+## Documentation
+
+- [**Backtesting Guide**](BACKTESTING_GUIDE.md): Step-by-step guide to the backtest engine, creating strategies, and configuration.
+
 ## Project Structure
 
 ```
 src/
-├── main.rs                 # Entry point - loads and displays parquet data
+├── main.rs                 # Entry point
+├── backtest/               # Backtest engine core (Portfolio, Engine, Context)
+├── strategies/             # User-defined strategies (e.g., maMomentum)
 ├── parsing/
-│   ├── mod.rs            # Constants for data directories
-│   ├── parquet.rs        # Parquet file reading functions
-│   └── csv.rs            # CSV parsing (future)
+│   ├── mod.rs            # Constants
+│   └── parquet.rs        # Parquet file reading
 ├── types/
 │   ├── ohlcv.rs          # OHLCV data types
-│   └── log.rs            # Logging types
-├── indicators/           # Technical indicators (future)
-├── position/
-│   └── manager.rs        # Position management (future)
-└── events/               # Event system (future)
+│   └── log.rs            # Trade logging types
+├── indicators/           # Technical indicators implementation
+├── position/             # Position management, orders, and sizing
+└── config.rs             # Configuration logic
 ```
 
 ## Dependencies

@@ -18,19 +18,19 @@ pub enum SizingStrategy {
 
 impl SizingStrategy {
     /// Calculate the number of shares to trade
-    pub fn calculate(&self, row: &Row, account_value: f64, _signal: Option<&Signal>) -> i64 {
+    pub fn calculate(&self, price: f64, account_value: f64, _signal: Option<&Signal>) -> i64 {
         match self {
             SizingStrategy::Fixed(shares) => *shares,
             SizingStrategy::FixedDollar(amount) => {
-                (amount / row.close).floor() as i64
+                (amount / price).floor() as i64
             }
             SizingStrategy::PercentOfAccount(pct) => {
                 let amount = account_value * (pct / 100.0);
-                (amount / row.close).floor() as i64
+                (amount / price).floor() as i64
             }
             SizingStrategy::RiskBased { risk_percent, stop_distance } => {
                 let risk_amount = account_value * (risk_percent / 100.0);
-                (risk_amount / stop_distance).floor() as i64
+                (risk_amount / (price * (1.0 - stop_distance))).floor() as i64
             }
             SizingStrategy::SignalBased(func) => {
                 0 // @TODO: implement this

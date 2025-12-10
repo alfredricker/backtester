@@ -55,17 +55,19 @@ impl BacktestEngine {
         let indicator_values = context.get_indicator_values();
         let strategy_name = strategy.name().to_string();
 
-        // 5. Execute Signals
+        // 5. Process Signals (Create Pending Orders)
         for signal in signals {
-            if let Some(log) = self.portfolio.process_signal(
+            self.portfolio.process_signal(
                 &signal, 
                 row.close, 
                 row.timestamp, 
                 &indicator_values, 
                 &strategy_name
-            ) {
-                self.trade_logs.push(log);
-            }
+            );
         }
+
+        // 6. Check & Execute Pending Orders
+        let logs = self.portfolio.check_orders(row);
+        self.trade_logs.extend(logs);
     }
 }

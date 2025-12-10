@@ -57,7 +57,7 @@ impl Strategy for MaMomentumStrategy {
             }
             // Cross Below (Exit)
             else if curr30 < curr60 && prev30 >= prev60 {
-                 signals.push(Signal::new_trigger(
+                signals.push(Signal::new_trigger(
                     context.ticker.clone(),
                     OrderType::MarketSell()
                 ));

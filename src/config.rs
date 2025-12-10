@@ -1,5 +1,6 @@
 use chrono::NaiveTime;
 use crate::indicators::window::Window;
+use crate::position::sizing::SizingStrategy;
 
 /// Global configuration for strategy testing
 #[derive(Debug, Clone)]
@@ -13,7 +14,8 @@ pub struct Config {
     pub slippage: f64,
     /// replace orders? How do you replace positions
     pub replacement_strategy: ReplacementStrategy,
-
+    /// sizing strategy
+    pub sizing_strategy: SizingStrategy,
 }
 
 /// Configuration for market hours and trading sessions
@@ -41,6 +43,7 @@ impl Default for Config {
             starting_buying_power: 1e5,
             slippage: 0.001, // 0.1% slippage
             replacement_strategy: ReplacementStrategy::Cancel,
+            sizing_strategy: SizingStrategy::Fixed(100),
         }
     }
 }
@@ -85,6 +88,7 @@ impl MarketHours {
     }
 }
 
+/// When maximum buying power is reached, what do we do?
 #[derive(Debug,Clone)]
 pub enum ReplacementStrategy {
     Queue, // queue up positions that can't be filled because of bp constraints, check if they can be filled in on a FI basis once bp is freed
@@ -115,3 +119,4 @@ pub fn get_config() -> Config {
         .unwrap()
         .clone()
 }
+

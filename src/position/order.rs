@@ -1,14 +1,15 @@
 use crate::types::ohlcv::Row;
 use crate::utils::get_mc_timestamp;
+#[derive(Debug, Clone)]
 pub struct Order {
-    order_type: OrderType, //contains order distance (price information)
-    open_or_close: OrderAction,
-    timestamp: i64, // submission timestamp
-    good_until: OrderTimeline, // default will be EOD (end of day)
-    size: i64,
-    fill_size: i64,
-    fill_price: Option<f64>,
-    completed: bool,
+    pub order_type: OrderType, //contains order distance (price information)
+    pub open_or_close: OrderAction,
+    pub timestamp: i64, // submission timestamp
+    pub good_until: OrderTimeline, // default will be EOD (end of day)
+    pub size: i64,
+    pub fill_size: i64,
+    pub fill_price: Option<f64>,
+    pub completed: bool,
 }
 
 impl Order {
@@ -114,6 +115,7 @@ impl Order {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum OrderAction {
     Open, // order is to open a position
     Close // order is to close a position
@@ -228,6 +230,7 @@ impl OrderType {
 }
 
 
+#[derive(Debug, Clone, Copy)]
 pub enum OrderTimeline {
     GTC, // good til cancelled
     EOD, // end of day
